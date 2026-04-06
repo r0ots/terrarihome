@@ -424,9 +424,10 @@ Gingembre place a cote d'une Carotte existante :
 
 ### Systeme de prix
 - Chaque pack a un **cout de base**
-- Il y a un **modificateur de prix global** commencant a 0
-- Prix du pack = cout de base + modificateur de prix global
-- Quand un pack est achete : modificateur global += valeur d'inflation du pack
+- Chaque **emplacement** de la boutique a un **bonus de prix** commencant a 0
+- Prix du pack = cout de base + bonus de l'emplacement
+- Quand un pack est achete : le bonus de **cet emplacement** += valeur d'inflation du pack achete
+- Les autres emplacements ne sont PAS affectes (seul le nouveau pack qui remplace est plus cher)
   - Pack economique : +1
   - Pack standard : +2
   - Pack premium : +3
@@ -738,8 +739,9 @@ Chaines cles :
 ### Encore ouvertes
 1. **Champignons toxiques 🍄** : Mecaniques a designer quand on ajoutera du contenu
 2. **Traduction des noms EN** : A voir plus tard (jeux de mots francais)
-3. ~~Taille des patchs~~ → 6x4 (24 cases)
-4. ~~Disposition terrain~~ → Aleatoire a chaque prestige
+3. ~~Taille des patchs~~ → 6 colonnes par patch (implementé)
+4. ~~Disposition terrain~~ → Aleatoire a chaque prestige (implementé)
 5. **Ameliorations d'outils** : Tailles superieures (3x3, 5x5), arrachage propre — a ajouter dans une MAJ
 6. **Equilibrage fin** : Probabilites exactes des packs, valeurs compost, scoring — a affiner en playtestant
 7. **Plantes futures** : Le fils en inventera plus, les 12 supplementaires actuelles sont temporaires
+8. **Ecran de victoire** : Quand "Terrarium Parfait" est achete, pas de cutscene/ecran de fin encore
