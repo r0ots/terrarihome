@@ -1,10 +1,12 @@
-[gd_scene load_steps=7 format=3 uid="uid://game01"]
+[gd_scene load_steps=9 format=3 uid="uid://game01"]
 
 [ext_resource type="Script" path="res://scripts/game/game.gd" id="1"]
 [ext_resource type="Script" path="res://scripts/game/grid_view.gd" id="2"]
 [ext_resource type="Script" path="res://scripts/game/hand_view.gd" id="3"]
 [ext_resource type="Script" path="res://scripts/game/shop_view.gd" id="4"]
 [ext_resource type="PackedScene" path="res://scenes/prestige/prestige_tree.tscn" id="5"]
+[ext_resource type="Script" path="res://scripts/game/encyclopedia.gd" id="6"]
+[ext_resource type="Script" path="res://scripts/game/tool_bar.gd" id="7"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_topbar"]
 bg_color = Color(0.16, 0.12, 0.08, 0.9)
@@ -48,9 +50,33 @@ text = "Arbre ★"
 layout_mode = 2
 text = "PP: 0"
 
+[node name="ResetButton" type="Button" parent="UI/TopBar"]
+layout_mode = 2
+text = "Reset"
+
+[node name="EncycButton" type="Button" parent="UI/TopBar"]
+layout_mode = 2
+text = "Encyclopedie"
+visible = false
+
 [node name="SettingsButton" type="Button" parent="UI/TopBar"]
 layout_mode = 2
 text = "⚙"
+
+[node name="ToolBar" type="HBoxContainer" parent="UI"]
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 20.0
+offset_top = -200.0
+offset_right = -180.0
+offset_bottom = -155.0
+grow_horizontal = 2
+grow_vertical = 0
+alignment = 1
+visible = false
+script = ExtResource("7")
 
 [node name="HandBar" type="HBoxContainer" parent="UI"]
 anchors_preset = 12
@@ -80,3 +106,15 @@ grow_horizontal = 0
 grow_vertical = 0
 alignment = 1
 script = ExtResource("4")
+
+[node name="BinButton" type="Button" parent="UI"]
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 20.0
+offset_top = -40.0
+offset_right = 140.0
+offset_bottom = -10.0
+grow_vertical = 0
+text = "Poubelle"
+visible = false

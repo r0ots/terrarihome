@@ -15,10 +15,11 @@ var prestige_points: int = 0:
 		prestige_points = value
 		prestige_points_changed.emit(prestige_points)
 
-var pack_price_modifier: int = 0
 var hand: Array[StringName] = []
 var hand_size_max: int = 5
 var unlocked_upgrades: Array[StringName] = []
+var tool_inventory: Array[StringName] = []
+var tool_inventory_max: int = 2
 var starting_cards: Array[StringName] = [&"carotte", &"carotte", &"herberaude", &"herberaude", &"boutomate"]
 
 
@@ -28,8 +29,8 @@ func _ready() -> void:
 
 func new_game() -> void:
 	points = 0
-	pack_price_modifier = 0
 	hand.clear()
+	tool_inventory.clear()
 	for card_id: StringName in starting_cards:
 		hand.append(card_id)
 

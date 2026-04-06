@@ -4,19 +4,21 @@ const SAVE_PATH := "user://save.json"
 
 var grid_save_data: Dictionary = {}
 var shop_slots_save: Array = []
+var shop_bonus_save: Array = []
 
 
 func save_game() -> void:
 	var data: Dictionary = {
 		"points": GameManager.points,
 		"prestige_points": GameManager.prestige_points,
-		"pack_price_modifier": GameManager.pack_price_modifier,
 		"hand": GameManager.hand,
 		"hand_size_max": GameManager.hand_size_max,
 		"unlocked_upgrades": GameManager.unlocked_upgrades,
 		"starting_cards": GameManager.starting_cards,
+		"tool_inventory": GameManager.tool_inventory,
 		"grid": grid_save_data,
 		"shop_slots": shop_slots_save,
+		"shop_bonus": shop_bonus_save,
 	}
 	var f: FileAccess = FileAccess.open(SAVE_PATH, FileAccess.WRITE)
 	f.store_string(JSON.stringify(data))
@@ -31,7 +33,6 @@ func load_game() -> bool:
 		return false
 	GameManager.points = data.get("points", 0)
 	GameManager.prestige_points = data.get("prestige_points", 0)
-	GameManager.pack_price_modifier = data.get("pack_price_modifier", 0)
 	GameManager.hand.clear()
 	for card: String in data.get("hand", []):
 		GameManager.hand.append(StringName(card))
@@ -42,8 +43,12 @@ func load_game() -> bool:
 	GameManager.starting_cards.clear()
 	for c: String in data.get("starting_cards", []):
 		GameManager.starting_cards.append(StringName(c))
+	GameManager.tool_inventory.clear()
+	for t: String in data.get("tool_inventory", []):
+		GameManager.tool_inventory.append(StringName(t))
 	grid_save_data = data.get("grid", {})
 	shop_slots_save = data.get("shop_slots", [])
+	shop_bonus_save = data.get("shop_bonus", [])
 	return true
 
 
@@ -67,7 +72,13 @@ func serialize_grid(grid: GridData) -> Dictionary:
 	var mods: Dictionary = {}
 	for pos: Vector2i in grid.cell_modifiers:
 		mods["%d,%d" % [pos.x, pos.y]] = grid.cell_modifiers[pos]
-	return {"width": grid.width, "height": grid.height, "plants": plants_data, "modifiers": mods, "next_id": grid.next_plant_id}
+	var blocked: Dictionary = {}
+	for x: int in grid.width:
+		for y: int in grid.height:
+			var s: int = grid.cells[x][y]
+			if s >= GridData.BLOCKED_ROCK and s <= GridData.BLOCKED_HOLE:
+				blocked["%d,%d" % [x, y]] = s
+	return {"width": grid.width, "height": grid.height, "plants": plants_data, "modifiers": mods, "next_id": grid.next_plant_id, "blocked": blocked}
 
 
 func deserialize_grid(data: Dictionary) -> GridData:
@@ -89,4 +100,9 @@ func deserialize_grid(data: Dictionary) -> GridData:
 		var parts: PackedStringArray = key.split(",")
 		var pos: Vector2i = Vector2i(int(parts[0]), int(parts[1]))
 		g.cell_modifiers[pos] = mods[key]
+	var blocked: Dictionary = data.get("blocked", {})
+	for key: String in blocked:
+		var parts: PackedStringArray = key.split(",")
+		var pos: Vector2i = Vector2i(int(parts[0]), int(parts[1]))
+		g.cells[pos.x][pos.y] = int(blocked[key])
 	return g

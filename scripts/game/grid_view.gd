@@ -45,6 +45,7 @@ var cell_size: float = 40.0
 var preview_plant_id: StringName = &""
 var preview_pos: Vector2i = Vector2i(-1, -1)
 var hover_pos: Vector2i = Vector2i(-1, -1)
+var active_tool: StringName = &""
 var _info_popup: PanelContainer = null
 var _hovered_plant_id: int = -1
 
@@ -87,6 +88,14 @@ func set_preview(plant_id: StringName, grid_pos: Vector2i) -> void:
 func clear_preview() -> void:
 	preview_plant_id = &""
 	preview_pos = Vector2i(-1, -1)
+	active_tool = &""
+	queue_redraw()
+
+
+func set_tool_hover(tool_id: StringName, grid_pos: Vector2i) -> void:
+	active_tool = tool_id
+	preview_plant_id = &""
+	hover_pos = grid_pos
 	queue_redraw()
 
 
@@ -122,6 +131,19 @@ func _input(event: InputEvent) -> void:
 			var gp: Vector2i = screen_to_grid(event.global_position)
 			if grid_data.is_valid_pos(gp):
 				cell_clicked.emit(gp)
+	elif event is InputEventScreenDrag:
+		var gp: Vector2i = screen_to_grid(event.position)
+		if gp != hover_pos:
+			hover_pos = gp
+			cell_hovered.emit(gp)
+			_update_hover_info(gp)
+			queue_redraw()
+	elif event is InputEventScreenTouch:
+		var gp: Vector2i = screen_to_grid(event.position)
+		if event.pressed and grid_data.is_valid_pos(gp):
+			hover_pos = gp
+			cell_hovered.emit(gp)
+			cell_clicked.emit(gp)
 
 
 func _update_hover_info(gp: Vector2i) -> void:
@@ -231,10 +253,17 @@ func _draw() -> void:
 	for x: int in w:
 		for y: int in h:
 			var state: int = grid_data.get_cell_state(Vector2i(x, y))
-			if state == GridData.BLOCKED_ROCK or state == GridData.BLOCKED_HOLE:
-				draw_rect(Rect2(x * cs, y * cs, cs, cs), BLOCKED_COLOR)
+			if state == GridData.BLOCKED_ROCK:
+				draw_rect(Rect2(x * cs, y * cs, cs, cs), Color(0.25, 0.20, 0.15))
+				draw_rect(Rect2(x * cs + cs * 0.2, y * cs + cs * 0.3, cs * 0.3, cs * 0.25), Color(0.35, 0.30, 0.25))
+				draw_rect(Rect2(x * cs + cs * 0.5, y * cs + cs * 0.5, cs * 0.35, cs * 0.3), Color(0.30, 0.25, 0.20))
 			elif state == GridData.BLOCKED_RIVER:
-				draw_rect(Rect2(x * cs, y * cs, cs, cs), Color(0.2, 0.35, 0.55, 0.5))
+				draw_rect(Rect2(x * cs, y * cs, cs, cs), Color(0.15, 0.30, 0.50, 0.7))
+				draw_line(Vector2(x * cs + 2, y * cs + cs * 0.4), Vector2(x * cs + cs - 2, y * cs + cs * 0.6), Color(0.3, 0.5, 0.8, 0.5), 2.0)
+			elif state == GridData.BLOCKED_HOLE:
+				draw_rect(Rect2(x * cs, y * cs, cs, cs), Color(0.08, 0.06, 0.04))
+				draw_line(Vector2(x * cs + 4, y * cs + 4), Vector2(x * cs + cs - 4, y * cs + cs - 4), Color(0.3, 0.2, 0.1), 2.0)
+				draw_line(Vector2(x * cs + cs - 4, y * cs + 4), Vector2(x * cs + 4, y * cs + cs - 4), Color(0.3, 0.2, 0.1), 2.0)
 
 	# Grid lines (drawn BEFORE plants so plants cover them)
 	for x: int in w + 1:
@@ -271,13 +300,9 @@ func _draw() -> void:
 			if not cells_set.has(Vector2i(cell_pos.x + 1, cell_pos.y)):
 				draw_rect(Rect2(px + cs - bw, py, bw, cs), border_col)
 
-		# Plant name centered on plant
+		# Icon then name (icon behind text)
 		if data and plant.cells.size() > 0:
 			var first: Vector2i = plant.cells[0]
-			var font_size: int = clampi(int(cs * 0.3), 8, 16)
-			var text_pos: Vector2 = Vector2(first.x * cs + 3, first.y * cs + font_size + 2)
-			draw_string(ThemeDB.fallback_font, text_pos, data.name_fr, HORIZONTAL_ALIGNMENT_LEFT, cs * 3, font_size, Color(0.96, 0.93, 0.85, 0.9))
-
 			var icon: ImageTexture = PlantIcons.get_icon(plant.plant_id)
 			if icon:
 				var icon_scale: int = maxi(1, int(cs / 16.0))
@@ -305,8 +330,23 @@ func _draw() -> void:
 				var r: Rect2 = Rect2(p.x * cs, p.y * cs, cs, cs)
 				draw_rect(r, overlay_color)
 
-	# Hover highlight (when no preview and no plant hovered)
-	if preview_plant_id == &"" and _hovered_plant_id == -1 and grid_data.is_valid_pos(hover_pos):
+	# Tool hover overlay
+	if active_tool != &"" and grid_data.is_valid_pos(hover_pos):
+		match active_tool:
+			&"shovel":
+				var col := Color(0.9, 0.3, 0.2, 0.35)
+				draw_rect(Rect2(hover_pos.x * cs, hover_pos.y * cs, cs, cs), col)
+			&"fertilizer":
+				var area: Array[Vector2i] = grid_data.get_cells_in_area(hover_pos, 1)
+				for c: Vector2i in area:
+					draw_rect(Rect2(c.x * cs, c.y * cs, cs, cs), Color(0.3, 0.75, 0.25, 0.25))
+			&"watering_can":
+				var area: Array[Vector2i] = grid_data.get_cells_in_area(hover_pos, 1)
+				for c: Vector2i in area:
+					draw_rect(Rect2(c.x * cs, c.y * cs, cs, cs), Color(0.3, 0.55, 0.9, 0.25))
+
+	# Hover highlight (when no preview, no tool, and no plant hovered)
+	if preview_plant_id == &"" and active_tool == &"" and _hovered_plant_id == -1 and grid_data.is_valid_pos(hover_pos):
 		draw_rect(Rect2(hover_pos.x * cs, hover_pos.y * cs, cs, cs), HOVER_COLOR)
 
 
@@ -316,5 +356,6 @@ func spawn_floating_text(grid_pos: Vector2i, text: String, color: Color = Color(
 	ft.text = text
 	ft.add_theme_color_override("font_color", color)
 	ft.add_theme_font_size_override("font_size", int(cell_size * 0.5))
-	ft.position = Vector2(grid_pos.x * cell_size, grid_pos.y * cell_size) - Vector2(10, 20)
+	var fs: int = int(cell_size * 0.5)
+	ft.position = Vector2(grid_pos.x * cell_size + cell_size / 2.0 - fs * 0.4, grid_pos.y * cell_size + cell_size / 2.0 - fs * 0.5)
 	add_child(ft)

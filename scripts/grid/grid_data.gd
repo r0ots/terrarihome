@@ -125,9 +125,77 @@ func get_all_occupied_neighbors(pos: Vector2i) -> Array[Vector2i]:
 	return result
 
 
+func get_cells_in_area(center: Vector2i, radius: int) -> Array[Vector2i]:
+	var result: Array[Vector2i] = []
+	for dx: int in range(-radius, radius + 1):
+		for dy: int in range(-radius, radius + 1):
+			var p: Vector2i = center + Vector2i(dx, dy)
+			if is_valid_pos(p):
+				result.append(p)
+	return result
+
+
+func get_plant_instances_in_area(center: Vector2i, radius: int) -> Array[int]:
+	var seen: Dictionary = {}
+	var result: Array[int] = []
+	for c: Vector2i in get_cells_in_area(center, radius):
+		var id: int = get_plant_at(c)
+		if id != -1 and not seen.has(id):
+			seen[id] = true
+			result.append(id)
+	return result
+
+
 func is_grid_full() -> bool:
 	for x: int in width:
 		for y: int in height:
 			if cells[x][y] == EMPTY:
 				return false
 	return true
+
+
+func expand_grid(extra_w: int, extra_h: int, biome: StringName) -> void:
+	var old_w: int = width
+	width += extra_w
+	height += extra_h
+	# Extend existing columns
+	if extra_h > 0:
+		for x: int in old_w:
+			cells[x].resize(height)
+			for y: int in range(height - extra_h, height):
+				cells[x][y] = EMPTY
+	# Add new columns
+	for x: int in range(old_w, width):
+		var col: Array[int] = []
+		col.resize(height)
+		col.fill(EMPTY)
+		cells.append(col)
+	# Apply biome blockers in the new patch area
+	match biome:
+		&"rocky":
+			_place_rocks(old_w, 0, extra_w, height if extra_h == 0 else extra_h)
+		&"river":
+			_place_river(old_w, 0, extra_w, height if extra_h == 0 else extra_h)
+
+
+func _place_rocks(start_x: int, start_y: int, w: int, h: int) -> void:
+	var count: int = roundi(w * h * 0.3)
+	var candidates: Array[Vector2i] = []
+	for x: int in range(start_x, start_x + w):
+		for y: int in range(start_y, start_y + h):
+			candidates.append(Vector2i(x, y))
+	candidates.shuffle()
+	for i: int in mini(count, candidates.size()):
+		cells[candidates[i].x][candidates[i].y] = BLOCKED_ROCK
+
+
+func _place_river(start_x: int, start_y: int, w: int, h: int) -> void:
+	var mid_x: int = start_x + w / 2
+	var y_pos: int = start_y
+	while y_pos < start_y + h:
+		var rx: int = clampi(mid_x + randi_range(-1, 1), start_x, start_x + w - 1)
+		cells[rx][y_pos] = BLOCKED_RIVER
+		if randi() % 3 == 0 and rx + 1 < start_x + w:
+			cells[rx + 1][y_pos] = BLOCKED_RIVER
+		mid_x = rx
+		y_pos += 1

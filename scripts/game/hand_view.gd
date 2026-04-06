@@ -82,7 +82,7 @@ func _hide_info() -> void:
 func _create_card(index: int, plant_id: StringName) -> PanelContainer:
 	var data: PlantData = PlantDatabase.get_plant(plant_id)
 	var panel: PanelContainer = PanelContainer.new()
-	panel.custom_minimum_size = Vector2(100, 130)
+	panel.custom_minimum_size = Vector2(120, 140)
 
 	var vbox: VBoxContainer = VBoxContainer.new()
 	vbox.alignment = BoxContainer.ALIGNMENT_CENTER
