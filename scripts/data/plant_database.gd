@@ -20,28 +20,39 @@ static func get_all() -> Dictionary:
 	return _plants
 
 
+static func get_max_mastery(tier: StringName) -> int:
+	match tier:
+		&"base": return 1
+		&"standard": return 2
+		&"premium": return 3
+	return 0
+
+
 static func _register_all() -> void:
-	_add(&"carotte", "Carotte", "Carrot", [Vector2i(0,0), Vector2i(0,1)], [&"legume"], &"per_adjacent_type", [&"legume"], &"bidirectional", 0, 1, true)
-	_add(&"herberaude", "Herberaude", "Herberaude", [Vector2i(0,0)], [&"plante"], &"flat", [], &"on_place_only", 1, 1, true)
-	_add(&"boutomate", "Boutomate", "Boutomate", [Vector2i(0,0), Vector2i(1,0)], [&"legume"], &"per_adjacent_type", [&"legume", &"plante"], &"bidirectional", 0, 2, true)
-	_add(&"persil_piquant", "Persil Piquant", "Spicy Parsley", [Vector2i(0,0), Vector2i(1,0), Vector2i(2,0)], [&"plante"], &"per_adjacent_type", [&"plante"], &"bidirectional", 0, 2, true)
-	_add(&"cactus_epineux", "Cactus Epineux", "Spiny Cactus", [Vector2i(0,0)], [&"plante"], &"per_adjacent_empty", [], &"on_place_only", 0, 1, true)
-	_add(&"basilic_royal", "Basilic Royal", "Royal Basil", [Vector2i(0,0), Vector2i(0,1), Vector2i(1,1)], [&"plante", &"legume"], &"per_adjacent_type", [&"legume"], &"bidirectional", 0, 2, true)
-	_add(&"truffe", "Truffe", "Truffle", [Vector2i(0,0), Vector2i(1,0), Vector2i(0,1), Vector2i(1,1)], [&"champi"], &"per_adjacent_type", [&"champi"], &"bidirectional", 0, 2, false)
-	_add(&"champi_mi_gnon", "Champi-mi-gnon", "Cute Shroom", [Vector2i(0,0)], [&"champi"], &"per_adjacent_any", [], &"on_place_only", 0, 1, false)
-	_add(&"morille_doree", "Morille Doree", "Golden Morel", [Vector2i(0,0), Vector2i(0,1), Vector2i(0,2)], [&"champi"], &"per_adjacent_type", [&"champi"], &"bidirectional", 0, 2, false)
-	_add(&"pleurote_cascade", "Pleurote Cascade", "Cascade Oyster", [Vector2i(0,0), Vector2i(0,1), Vector2i(1,1), Vector2i(1,2)], [&"champi"], &"per_adjacent_type", [&"champi", &"plante"], &"bidirectional", 0, 3, false)
-	_add(&"mousse_lunaire", "Mousse Lunaire", "Moon Moss", [Vector2i(0,0), Vector2i(1,0)], [&"plante"], &"per_adjacent_type", [&"plante", &"champi"], &"bidirectional", 0, 2, false)
-	_add(&"patate_douce", "Patate Douce", "Sweet Potato", [Vector2i(0,0), Vector2i(1,0), Vector2i(0,1)], [&"legume", &"racine"], &"per_adjacent_type", [&"racine"], &"bidirectional", 0, 2, false)
-	_add(&"radis_rose", "Radis Rose", "Pink Radish", [Vector2i(0,0)], [&"legume", &"racine"], &"flat", [], &"on_place_only", 2, 1, false)
-	_add(&"navet_tournoyant", "Navet Tournoyant", "Spinning Turnip", [Vector2i(0,0), Vector2i(0,1)], [&"racine", &"legume"], &"modifier_plus1", [&"racine"], &"bidirectional", 0, 2, false)
-	_add(&"gingembre_tourne_vent", "Gingembre Tourne-Vent", "Windmill Ginger", [Vector2i(1,0), Vector2i(0,1), Vector2i(1,1), Vector2i(2,1), Vector2i(1,2)], [&"legume", &"racine"], &"modifier_x2", [&"legume"], &"bidirectional", 0, 3, false)
-	_add(&"ail_des_ours", "Ail des Ours", "Wild Garlic", [Vector2i(1,0), Vector2i(0,1), Vector2i(1,1), Vector2i(2,1)], [&"legume", &"racine"], &"per_adjacent_type", [&"legume", &"racine"], &"bidirectional", 0, 3, false)
-	_add(&"fougere_dor", "Fougere d'Or", "Golden Fern", [Vector2i(0,0), Vector2i(0,1), Vector2i(0,2), Vector2i(0,3)], [&"plante"], &"per_adjacent_type", [&"plante"], &"bidirectional", 0, 3, false)
-	_add(&"fraise_sauvage", "Fraise Sauvage", "Wild Strawberry", [Vector2i(0,0), Vector2i(1,0), Vector2i(0,1), Vector2i(1,1), Vector2i(0,2)], [&"legume", &"plante"], &"per_adjacent_type", [&"legume", &"plante"], &"bidirectional", 0, 4, false)
+	# Base tier (max mastery 1)
+	_add(&"carotte", "Carotte", "Carrot", [Vector2i(0,0), Vector2i(0,1)], [&"legume"], &"per_adjacent_type", [&"legume"], &"bidirectional", 0, 1, true, &"base")
+	_add(&"herberaude", "Herberaude", "Herberaude", [Vector2i(0,0)], [&"plante"], &"flat", [], &"on_place_only", 1, 1, true, &"base")
+	_add(&"boutomate", "Boutomate", "Boutomate", [Vector2i(0,0), Vector2i(1,0)], [&"legume"], &"per_adjacent_type", [&"legume", &"plante"], &"bidirectional", 0, 2, true, &"base")
+	_add(&"persil_piquant", "Persil Piquant", "Spicy Parsley", [Vector2i(0,0), Vector2i(1,0), Vector2i(2,0)], [&"plante"], &"per_adjacent_type", [&"plante"], &"bidirectional", 0, 2, true, &"base")
+	_add(&"cactus_epineux", "Cactus Epineux", "Spiny Cactus", [Vector2i(0,0)], [&"plante"], &"per_adjacent_empty", [], &"on_place_only", 0, 1, true, &"base")
+	_add(&"basilic_royal", "Basilic Royal", "Royal Basil", [Vector2i(0,0), Vector2i(0,1), Vector2i(1,1)], [&"plante", &"legume"], &"per_adjacent_type", [&"legume"], &"bidirectional", 0, 2, true, &"base")
+	_add(&"radis_rose", "Radis Rose", "Pink Radish", [Vector2i(0,0)], [&"legume", &"racine"], &"flat", [], &"on_place_only", 2, 1, false, &"base")
+	# Standard tier (max mastery 2)
+	_add(&"truffe", "Truffe", "Truffle", [Vector2i(0,0), Vector2i(1,0), Vector2i(0,1), Vector2i(1,1)], [&"champi"], &"per_adjacent_type", [&"champi"], &"bidirectional", 0, 2, false, &"standard")
+	_add(&"champi_mi_gnon", "Champi-mi-gnon", "Cute Shroom", [Vector2i(0,0)], [&"champi"], &"per_adjacent_any", [], &"on_place_only", 0, 1, false, &"standard")
+	_add(&"morille_doree", "Morille Doree", "Golden Morel", [Vector2i(0,0), Vector2i(0,1), Vector2i(0,2)], [&"champi"], &"per_adjacent_type", [&"champi"], &"bidirectional", 0, 2, false, &"standard")
+	_add(&"mousse_lunaire", "Mousse Lunaire", "Moon Moss", [Vector2i(0,0), Vector2i(1,0)], [&"plante"], &"per_adjacent_type", [&"plante", &"champi"], &"bidirectional", 0, 2, false, &"standard")
+	_add(&"patate_douce", "Patate Douce", "Sweet Potato", [Vector2i(0,0), Vector2i(1,0), Vector2i(0,1)], [&"legume", &"racine"], &"per_adjacent_type", [&"racine"], &"bidirectional", 0, 2, false, &"standard")
+	_add(&"navet_tournoyant", "Navet Tournoyant", "Spinning Turnip", [Vector2i(0,0), Vector2i(0,1)], [&"racine", &"legume"], &"modifier_plus1", [&"racine"], &"bidirectional", 0, 2, false, &"standard")
+	# Premium tier (max mastery 3)
+	_add(&"pleurote_cascade", "Pleurote Cascade", "Cascade Oyster", [Vector2i(0,0), Vector2i(0,1), Vector2i(1,1), Vector2i(1,2)], [&"champi"], &"per_adjacent_type", [&"champi", &"plante"], &"bidirectional", 0, 3, false, &"premium")
+	_add(&"ail_des_ours", "Ail des Ours", "Wild Garlic", [Vector2i(1,0), Vector2i(0,1), Vector2i(1,1), Vector2i(2,1)], [&"legume", &"racine"], &"per_adjacent_type", [&"legume", &"racine"], &"bidirectional", 0, 3, false, &"premium")
+	_add(&"fougere_dor", "Fougere d'Or", "Golden Fern", [Vector2i(0,0), Vector2i(0,1), Vector2i(0,2), Vector2i(0,3)], [&"plante"], &"per_adjacent_type", [&"plante"], &"bidirectional", 0, 3, false, &"premium")
+	_add(&"fraise_sauvage", "Fraise Sauvage", "Wild Strawberry", [Vector2i(0,0), Vector2i(1,0), Vector2i(0,1), Vector2i(1,1), Vector2i(0,2)], [&"legume", &"plante"], &"per_adjacent_type", [&"legume", &"plante"], &"bidirectional", 0, 4, false, &"premium")
+	_add(&"gingembre_tourne_vent", "Gingembre Tourne-Vent", "Windmill Ginger", [Vector2i(1,0), Vector2i(0,1), Vector2i(1,1), Vector2i(2,1), Vector2i(1,2)], [&"legume", &"racine"], &"modifier_x2", [&"legume"], &"bidirectional", 0, 3, false, &"premium")
 
 
-static func _add(id: StringName, name_fr: String, name_en: String, shape: Array[Vector2i], types: Array[StringName], combo_type: StringName, combo_targets: Array[StringName], scoring_mode: StringName, flat_value: int, compost_value: int, is_base: bool) -> void:
+static func _add(id: StringName, name_fr: String, name_en: String, shape: Array[Vector2i], types: Array[StringName], combo_type: StringName, combo_targets: Array[StringName], scoring_mode: StringName, flat_value: int, compost_value: int, is_base: bool, tier: StringName = &"base") -> void:
 	var p := PlantData.new()
 	p.id = id
 	p.name_fr = name_fr
@@ -54,4 +65,5 @@ static func _add(id: StringName, name_fr: String, name_en: String, shape: Array[
 	p.flat_value = flat_value
 	p.compost_value = compost_value
 	p.is_base = is_base
+	p.tier = tier
 	_plants[id] = p

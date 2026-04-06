@@ -22,6 +22,12 @@ var tool_inventory: Array[StringName] = []
 var tool_inventory_max: int = 2
 var starting_cards: Array[StringName] = [&"carotte", &"carotte", &"herberaude", &"herberaude", &"boutomate"]
 
+var pack_card_bonus: int = 0
+var mastery_bonus: Dictionary = {&"base": 0, &"standard": 0, &"premium": 0}
+var free_first_pack: bool = false
+var free_pack_used: bool = false
+var overflow_compost: bool = false
+
 
 func _ready() -> void:
 	new_game()
@@ -31,6 +37,7 @@ func new_game() -> void:
 	points = 0
 	hand.clear()
 	tool_inventory.clear()
+	free_pack_used = false
 	for card_id: StringName in starting_cards:
 		hand.append(card_id)
 
@@ -65,3 +72,21 @@ func unlock_upgrade(id: StringName) -> void:
 	if id not in unlocked_upgrades:
 		unlocked_upgrades.append(id)
 		upgrade_unlocked.emit(id)
+
+
+func get_mastery_for_plant(plant_id: StringName) -> int:
+	var data: PlantData = PlantDatabase.get_plant(plant_id)
+	if not data: return 0
+	var tier_bonus: int = mastery_bonus.get(data.tier, 0)
+	return mini(tier_bonus, PlantDatabase.get_max_mastery(data.tier))
+
+
+func get_inflation_reduction(tier: StringName) -> int:
+	match tier:
+		&"eco":
+			return 1 if is_upgrade_unlocked(&"reduction_eco") else 0
+		&"standard":
+			return 1 if is_upgrade_unlocked(&"reduction_standard") else 0
+		&"premium", &"legendary":
+			return 1 if is_upgrade_unlocked(&"reduction_premium") else 0
+	return 0

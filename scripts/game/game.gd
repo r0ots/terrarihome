@@ -142,16 +142,30 @@ func _on_pack_purchased(slot_index: int) -> void:
 	var cost: int = shop_panel.get_pack_cost(slot_index)
 	if not GameManager.spend_points(cost):
 		return
+
+	if GameManager.free_first_pack and not GameManager.free_pack_used:
+		GameManager.free_pack_used = true
+
 	var cards: Array[String] = shop_panel.draw_cards_from_pack(slot_index)
 	for card_id: String in cards:
 		GameManager.hand.append(StringName(card_id))
 
+	# Overflow compost: discard excess cards
+	if GameManager.overflow_compost:
+		while GameManager.hand.size() > GameManager.hand_size_max:
+			var discarded: StringName = GameManager.hand.pop_back()
+			if GameManager.is_upgrade_unlocked(&"composteur"):
+				var pdata: PlantData = PlantDatabase.get_plant(discarded)
+				if pdata:
+					GameManager.points += pdata.compost_value
+
 	var pack: PackData = PackDatabase.get_pack(shop_panel.shop_slots[slot_index])
-	var inflation: int = pack.inflation
+	var reduction: int = GameManager.get_inflation_reduction(pack.tier)
+	var actual_inflation: int = maxi(pack.inflation - reduction, 0)
 
 	var available: Array[StringName] = PackDatabase.get_available_packs(GameManager.unlocked_upgrades)
 	shop_panel.shop_slots[slot_index] = available[randi() % available.size()]
-	shop_panel.slot_bonus[slot_index] += inflation
+	shop_panel.slot_bonus[slot_index] += actual_inflation
 	shop_panel._pre_drawn_cards[slot_index] = shop_panel._roll_cards_for_slot(slot_index)
 
 	_refresh_all()
@@ -201,6 +215,10 @@ func _on_reset_pressed() -> void:
 		GameManager.hand_size_max = 5
 		GameManager.unlocked_upgrades.clear()
 		GameManager.starting_cards = [&"carotte", &"carotte", &"herberaude", &"herberaude", &"boutomate"]
+		GameManager.pack_card_bonus = 0
+		GameManager.mastery_bonus = {&"base": 0, &"standard": 0, &"premium": 0}
+		GameManager.free_first_pack = false
+		GameManager.overflow_compost = false
 		GameManager.new_game()
 		grid_data = GridData.new()
 		scoring = ScoringEngine.new(grid_data)

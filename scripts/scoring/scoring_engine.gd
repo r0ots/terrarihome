@@ -32,7 +32,7 @@ func _apply_modifiers_from_plant(plant_id: StringName, instance_id: int) -> void
 	if not data or not data.combo_type.begins_with("modifier_"):
 		return
 	var plant: Dictionary = grid.plants[instance_id]
-	var mod_type: String = "x2" if data.combo_type == &"modifier_x2" else "plus1"
+	var mastery: int = _get_mastery_for_data(data)
 
 	for pos: Vector2i in plant.cells:
 		for n: Vector2i in grid.get_neighbors(pos):
@@ -40,7 +40,10 @@ func _apply_modifiers_from_plant(plant_id: StringName, instance_id: int) -> void
 			if nid == -1 or nid == instance_id:
 				continue
 			if _plant_has_any_type(nid, data.combo_targets):
-				grid.add_modifier(n, {type = mod_type, source = instance_id})
+				if data.combo_type == &"modifier_x2":
+					grid.add_modifier(n, {type = "x2", source = instance_id, bonus = mastery})
+				else:
+					grid.add_modifier(n, {type = "plus1", source = instance_id, value = 1 + mastery})
 
 
 func _apply_modifiers_to_plant(instance_id: int) -> void:
@@ -57,8 +60,11 @@ func _apply_modifiers_to_plant(instance_id: int) -> void:
 			if not neighbor_data.combo_type.begins_with("modifier_"):
 				continue
 			if _types_match(plant_data.types, neighbor_data.combo_targets):
-				var mod_type: String = "x2" if neighbor_data.combo_type == &"modifier_x2" else "plus1"
-				grid.add_modifier(pos, {type = mod_type, source = nid})
+				var n_mastery: int = _get_mastery_for_data(neighbor_data)
+				if neighbor_data.combo_type == &"modifier_x2":
+					grid.add_modifier(pos, {type = "x2", source = nid, bonus = n_mastery})
+				else:
+					grid.add_modifier(pos, {type = "plus1", source = nid, value = 1 + n_mastery})
 
 
 func _score_plant_cells(plant_id: StringName, instance_id: int, plant_cells: Array, result: Dictionary) -> void:
@@ -68,7 +74,7 @@ func _score_plant_cells(plant_id: StringName, instance_id: int, plant_cells: Arr
 		return
 
 	if data.combo_type == &"flat":
-		var pts: int = _calculate_points_for_cell(plant_cells[0], data.flat_value)
+		var pts: int = _calculate_points_for_cell(plant_cells[0], data.flat_value + _get_mastery_for_data(data))
 		if pts > 0:
 			result.breakdown.append({cell = plant_cells[0], points = pts, source = plant_id})
 			result.total += pts
@@ -118,21 +124,22 @@ func _score_existing_neighbors(instance_id: int, result: Dictionary) -> void:
 
 
 func _get_base_points_for_neighbor(combo_type: StringName, data: PlantData, neighbor_pos: Vector2i, self_id: int) -> int:
+	var mastery: int = _get_mastery(self_id)
 	match combo_type:
 		&"per_adjacent_type":
 			var nid: int = grid.get_plant_at(neighbor_pos)
 			if nid == -1 or nid == self_id:
 				return 0
 			if _plant_has_any_type(nid, data.combo_targets):
-				return 1
+				return 1 + mastery
 		&"per_adjacent_any":
 			if grid.get_cell_state(neighbor_pos) == GridData.OCCUPIED:
 				var nid: int = grid.get_plant_at(neighbor_pos)
 				if nid != self_id:
-					return 1
+					return 1 + mastery
 		&"per_adjacent_empty":
 			if grid.is_cell_empty(neighbor_pos):
-				return 1
+				return 1 + mastery
 	return 0
 
 
@@ -140,12 +147,16 @@ func _calculate_points_for_cell(cell: Vector2i, base_points: int) -> int:
 	var pts: int = base_points
 	var mods: Array = grid.get_modifiers(cell)
 	var x2_count: int = 0
+	var x2_bonus: int = 0
 	var plus_count: int = 0
 	for m: Dictionary in mods:
 		match m.type:
 			"x2":
 				x2_count += 1
-			"plus1", "fertilizer", "river":
+				x2_bonus += m.get("bonus", 0)
+			"plus1":
+				plus_count += m.get("value", 1)
+			"fertilizer", "river":
 				plus_count += 1
 
 	for n: Vector2i in grid.get_neighbors(cell):
@@ -155,7 +166,7 @@ func _calculate_points_for_cell(cell: Vector2i, base_points: int) -> int:
 
 	if x2_count > 0:
 		pts *= (1 + x2_count)
-	pts += plus_count
+	pts += plus_count + x2_bonus
 	return pts
 
 
@@ -172,3 +183,13 @@ func _types_match(plant_types: Array[StringName], targets: Array[StringName]) ->
 		if targets.has(t):
 			return true
 	return false
+
+
+func _get_mastery(instance_id: int) -> int:
+	var plant: Dictionary = grid.plants.get(instance_id, {})
+	if plant.is_empty(): return 0
+	return GameManager.get_mastery_for_plant(plant.plant_id)
+
+
+func _get_mastery_for_data(data: PlantData) -> int:
+	return GameManager.get_mastery_for_plant(data.id)

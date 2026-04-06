@@ -19,6 +19,11 @@ func save_game() -> void:
 		"grid": grid_save_data,
 		"shop_slots": shop_slots_save,
 		"shop_bonus": shop_bonus_save,
+		"pack_card_bonus": GameManager.pack_card_bonus,
+		"mastery_bonus": GameManager.mastery_bonus,
+		"free_first_pack": GameManager.free_first_pack,
+		"free_pack_used": GameManager.free_pack_used,
+		"overflow_compost": GameManager.overflow_compost,
 	}
 	var f: FileAccess = FileAccess.open(SAVE_PATH, FileAccess.WRITE)
 	f.store_string(JSON.stringify(data))
@@ -46,6 +51,16 @@ func load_game() -> bool:
 	GameManager.tool_inventory.clear()
 	for t: String in data.get("tool_inventory", []):
 		GameManager.tool_inventory.append(StringName(t))
+	GameManager.pack_card_bonus = data.get("pack_card_bonus", 0)
+	var mb: Dictionary = data.get("mastery_bonus", {})
+	GameManager.mastery_bonus = {
+		&"base": mb.get("base", mb.get(&"base", 0)),
+		&"standard": mb.get("standard", mb.get(&"standard", 0)),
+		&"premium": mb.get("premium", mb.get(&"premium", 0)),
+	}
+	GameManager.free_first_pack = data.get("free_first_pack", false)
+	GameManager.free_pack_used = data.get("free_pack_used", false)
+	GameManager.overflow_compost = data.get("overflow_compost", false)
 	grid_save_data = data.get("grid", {})
 	shop_slots_save = data.get("shop_slots", [])
 	shop_bonus_save = data.get("shop_bonus", [])

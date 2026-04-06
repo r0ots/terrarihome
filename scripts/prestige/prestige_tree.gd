@@ -185,6 +185,22 @@ func _apply_effects(effects: Array[StringName]) -> void:
 			&"starter_extra_card":
 				var all_plants: Array = PlantDatabase.get_all().keys()
 				gm.starting_cards.append(all_plants[randi() % all_plants.size()])
+			&"free_first_pack":
+				gm.free_first_pack = true
+			&"pack_cards_plus1":
+				gm.pack_card_bonus += 1
+			&"overflow_compost":
+				gm.overflow_compost = true
+			&"mastery_base_1":
+				gm.mastery_bonus[&"base"] = gm.mastery_bonus.get(&"base", 0) + 1
+			&"mastery_standard_1":
+				gm.mastery_bonus[&"standard"] = gm.mastery_bonus.get(&"standard", 0) + 1
+			&"mastery_standard_2":
+				gm.mastery_bonus[&"standard"] = gm.mastery_bonus.get(&"standard", 0) + 1
+			&"mastery_premium_1":
+				gm.mastery_bonus[&"premium"] = gm.mastery_bonus.get(&"premium", 0) + 1
+			&"mastery_premium_3":
+				gm.mastery_bonus[&"premium"] = gm.mastery_bonus.get(&"premium", 0) + 2
 			_:
 				pass
 

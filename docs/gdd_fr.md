@@ -549,17 +549,17 @@ Quand un pack est achete :
 
 L'arbre de prestige a des **branches** groupees par fonctionnalite. Chaque branche est un **sous-arbre** avec des dependances entre les noeuds. La **branche principale** contient l'objectif final et necessite que toutes les autres branches soient completees.
 
-**Budget total : 21 points de prestige** (~10-15 prestiges pour finir le jeu)
+**Budget total : 38 points de prestige** (~25 prestiges pour finir le jeu, 9 branches, 31 noeuds)
 
 ```
-                  [TERRARIUM PARFAIT ★]
-                          |
-                  [Jardinier Expert]
-                          |
-        ┌─────────┬───────┼────────┬─────────┐
-   [Grille &   [Plantes [Main   [Outils  [Savoir]
-   Biomes]    & Packs]  & Cartes] & Inv]
-    4 pts       4 pts    4 pts    4 pts    3 pts
+                            [TERRARIUM PARFAIT ★]
+                                    |
+                            [Jardinier Expert]
+                                    |
+    ┌──────────┬──────────┬─────────┼─────────┬──────────┬──────────┬──────────┐
+[Grille &  [Plantes  [Main    [Outils   [Savoir] [Economie] [Abondance] [Maitrise]
+ Biomes]   & Packs]  & Cartes] & Inv]
+  4 pts      4 pts     4 pts    4 pts     3 pts     5 pts      5 pts       7 pts
 ```
 
 #### Branche : Grille & Biomes (4 pts)
@@ -640,6 +640,145 @@ Encyclopedie (1) ── Loupe (1) ── Rayons X (1)
 | Terrarium Parfait ★ | 1 | Jardinier Expert | **FIN DU JEU** — cutscene/animation speciale montrant le terrarium complet dans toute sa splendeur |
 
 > **Note** : Les ameliorations d'outils (taille pelle 3x3/5x5, arrachage propre, taille engrais 5x5, taille arrosoir 5x5) pourront etre ajoutees dans une mise a jour future comme noeuds supplementaires dans la branche Outils.
+
+### 8bis. Branches de Progression (Nouvelles)
+
+#### Branche : Economie (5 pts)
+
+Reduit l'inflation des packs et offre un pack gratuit par prestige.
+
+```
+Reduction Eco (1) ──┬── Reduction Standard (1) ── Reduction Premium (2)
+                    └── Pack Gratuit (1)
+```
+
+| Noeud | Cout | Prerequis | Effet |
+|-------|------|-----------|-------|
+| Reduction Eco | 1 | — | L'inflation du pack Eco passe de +1 a +0 (le prix n'augmente plus jamais) |
+| Reduction Standard | 1 | Reduction Eco | L'inflation du pack Standard passe de +2 a +1 |
+| Reduction Premium | 2 | Reduction Standard | L'inflation du pack Premium passe de +3 a +2, Legendaire de +5 a +4 |
+| Pack Gratuit | 1 | Reduction Eco | Le premier pack achete a chaque prestige est gratuit |
+
+#### Branche : Abondance (5 pts)
+
+Augmente le nombre de cartes par pack et gere le debordement de main.
+
+```
+Abondance I (1) ──┬── Abondance II (2)
+                  └── Main Debordante (2)
+```
+
+| Noeud | Cout | Prerequis | Effet |
+|-------|------|-----------|-------|
+| Abondance I | 1 | — | Tous les packs donnent +1 carte supplementaire |
+| Abondance II | 2 | Abondance I | Tous les packs donnent +2 cartes au total (cumulatif avec Abondance I) |
+| Main Debordante | 2 | Abondance I | Permet d'acheter des packs meme quand la main est pleine ; les cartes en surplus sont auto-compostees (rapportent des points selon leur valeur compost) |
+
+#### Branche : Maitrise (7 pts)
+
+Augmente le scoring de base des plantes selon leur palier via un systeme de maitrise.
+
+```
+Maitrise des Bases (1) ── Maitrise Intermediaire (1) ── Maitrise Avancee (2) ── Maitrise Supreme (3)
+```
+
+| Noeud | Cout | Prerequis | Effet |
+|-------|------|-----------|-------|
+| Maitrise des Bases | 1 | — | Les plantes Base gagnent +1 de maitrise (scoring de base passe a 2/adjacence) |
+| Maitrise Intermediaire | 1 | Maitrise des Bases | Les plantes Standard gagnent +1 de maitrise (scoring passe a 2/adjacence) |
+| Maitrise Avancee | 2 | Maitrise Intermediaire | Les plantes Standard gagnent +1 supplementaire (3/adj) et les plantes Premium gagnent +1 (2/adj) |
+| Maitrise Supreme | 3 | Maitrise Avancee | Les plantes Premium gagnent +2 supplementaires (scoring a 4/adj) |
+
+##### Classification des plantes par palier
+
+| Palier | Maitrise max | Plantes |
+|--------|-------------|---------|
+| Base | 1 | Carotte, Herberaude, Boutomate, Persil, Cactus, Basilic, Radis Rose |
+| Standard | 2 | Truffe, Champi-mi-gnon, Morille, Mousse Lunaire, Patate Douce, Navet |
+| Premium | 3 | Pleurote, Ail des Ours, Fougere d'Or, Fraise Sauvage, Gingembre |
+
+##### Impact de la maitrise sur le scoring
+
+Le bonus de maitrise s'ajoute aux points de base **avant** les multiplicateurs x2. Exemple : une Carotte a maitrise 1 adjacente a un Gingembre x2 rapporte (1+1) x 2 = 4 pts par adjacence au lieu de 2.
+
+| Noeud | Palier Base (pts/adj) | Palier Standard (pts/adj) | Palier Premium (pts/adj) |
+|-------|----------------------|--------------------------|-------------------------|
+| Aucun | 1 | 1 | 1 |
+| Maitrise des Bases | **2** | 1 | 1 |
+| + Maitrise Intermediaire | 2 | **2** | 1 |
+| + Maitrise Avancee | 2 | **3** | **2** |
+| + Maitrise Supreme | 2 | 3 | **4** |
+
+### Equilibrage et Progression
+
+#### Resume de l'arbre de prestige
+
+| Branche | PP | Statut |
+|---------|-----|--------|
+| Grille & Biomes | 4 | Existante |
+| Plantes & Packs | 4 | Existante |
+| Main & Cartes | 4 | Existante |
+| Outils & Inventaire | 4 | Existante |
+| Savoir | 3 | Existante |
+| Economie | 5 | **Nouvelle** |
+| Abondance | 5 | **Nouvelle** |
+| Maitrise | 7 | **Nouvelle** |
+| Principale | 2 | Existante |
+| **Total** | **38** | **9 branches, 31 noeuds** |
+
+#### Progression du score par prestige
+
+| Prestige # | Pts moy/carte | Points totaux | PP gagnes | PP cumules |
+|------------|--------------|---------------|-----------|------------|
+| 1-3 | 1.2-1.8 | 18-40 | 0-0 | 0-1 |
+| 4-5 | 2.0 | 50-55 | 1 | 2-3 |
+| 6-8 | 2.8 | 80-95 | 1-2 | 5-8 |
+| 9-12 | 4.0 | 150-190 | 3-4 | 12-18 |
+| 13-17 | 6.5 | 350-460 | 7-9 | 25-35 |
+| 18-22 | 10.0 | 625-825 | 12-16 | 38+ |
+| 23-25 | 12.0 | 870+ | 17+ | Termine |
+
+#### Chemin de progression optimal (38 PP)
+
+Ordre recommande d'achat des ameliorations pour une progression efficace :
+
+| # | Noeud | Branche | PP | Raison |
+|---|-------|---------|-----|--------|
+| 1 | Parcelle Herbeuse | Grille | 1 | +24 cases, espace essentiel |
+| 2 | Spores Champignon | Plantes | 1 | Nouveau type de plante |
+| 3 | Decouverte Racines | Plantes | 1 | Acces aux modificateurs |
+| 4 | Reduction Eco | **Economie** | 1 | Packs eco sans inflation |
+| 5 | Poubelle | Main | 1 | Gestion de main |
+| 6 | Maitrise des Bases | **Maitrise** | 1 | Plantes base scorent 2x |
+| 7 | Abondance I | **Abondance** | 1 | +1 carte par pack |
+| 8 | Packs Avances | Plantes | 1 | Acces packs premium |
+| 9 | Main +1 | Main | 1 | Main passe a 6 |
+| 10 | Composteur | Main | 1 | Defausse = points |
+| 11 | Ceinture Outils | Outils | 1 | Systeme d'outils |
+| 12 | Reduction Standard | **Economie** | 1 | Packs standard moins chers |
+| 13 | Maitrise Intermediaire | **Maitrise** | 1 | Standard +1 pts/adj |
+| 14 | Terrain Rocheux | Grille | 1 | +24 cases |
+| 15 | Recolte Legendaire | Plantes | 1 | Pack legendaire |
+| 16-18 | Encyclopedie, Pelle, Engrais | Savoir/Outils | 3 | Info + outils |
+| 19 | Maitrise Avancee | **Maitrise** | 2 | Standard 3/adj, Premium 2/adj |
+| 20 | Riviere | Grille | 2 | +24 cases + bonus riviere |
+| 21 | Reduction Premium | **Economie** | 2 | Premium/legendaire moins chers |
+| 22 | Abondance II | **Abondance** | 2 | +2 cartes/pack au total |
+| 23 | Pack Gratuit | **Economie** | 1 | Premier pack gratuit |
+| 24 | Main Debordante | **Abondance** | 2 | Surplus = points compost |
+| 25-26 | Loupe, Arrosoir | Savoir/Outils | 2 | Info packs + redeclenchement |
+| 27 | Maitrise Supreme | **Maitrise** | 3 | Premium a 4/adj |
+| 28-29 | Starter Bonus, Rayons X | Main/Savoir | 2 | Peaufinage |
+| 30-31 | Jardinier Expert, Terrarium Parfait | Principale | 2 | FIN DU JEU |
+
+#### Progression du cout des packs avec Economie
+
+| Pack | Inflation de base | Avec Reduction Eco | + Reduction Standard | + Reduction Premium |
+|------|------------------|--------------------|---------------------|---------------------|
+| Eco | +1/achat | **+0** | +0 | +0 |
+| Standard | +2/achat | +2 | **+1** | +1 |
+| Premium | +3/achat | +3 | +3 | **+2** |
+| Legendaire | +5/achat | +5 | +5 | **+4** |
 
 ---
 

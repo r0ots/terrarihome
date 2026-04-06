@@ -32,12 +32,14 @@ func _roll_cards_for_slot(slot_index: int) -> Array[String]:
 	if not pack:
 		return []
 	var cards: Array[String] = []
-	for _i: int in pack.card_count:
+	for _i: int in pack.card_count + GameManager.pack_card_bonus:
 		cards.append(_weighted_pick(pack.contents))
 	return cards
 
 
 func get_pack_cost(slot_index: int) -> int:
+	if GameManager.free_first_pack and not GameManager.free_pack_used:
+		return 0
 	if slot_index >= shop_slots.size():
 		return 999
 	var pack: PackData = PackDatabase.get_pack(shop_slots[slot_index])
@@ -53,7 +55,7 @@ func draw_cards_from_pack(slot_index: int) -> Array[String]:
 		_pre_drawn_cards[slot_index] = []
 	else:
 		var pack: PackData = PackDatabase.get_pack(shop_slots[slot_index])
-		for _i: int in pack.card_count:
+		for _i: int in pack.card_count + GameManager.pack_card_bonus:
 			cards.append(_weighted_pick(pack.contents))
 	_try_tool_bonus()
 	return cards
@@ -113,7 +115,8 @@ func refresh(current_points: int, hand_size: int, hand_max: int) -> void:
 		var pack: PackData = PackDatabase.get_pack(shop_slots[i])
 		var cost: int = get_pack_cost(i)
 		var room: int = hand_max - hand_size
-		var can_buy: bool = current_points >= cost and room >= pack.card_count
+		var has_room: bool = GameManager.overflow_compost or room >= pack.card_count + GameManager.pack_card_bonus
+		var can_buy: bool = current_points >= cost and has_room
 		add_child(_create_pack_slot(i, pack, cost, can_buy))
 
 
@@ -132,7 +135,7 @@ func _create_pack_slot(index: int, pack: PackData, cost: int, can_buy: bool) -> 
 	vbox.add_child(name_lbl)
 
 	var info_lbl: Label = Label.new()
-	info_lbl.text = "%d pts  |  %d cartes" % [cost, pack.card_count]
+	info_lbl.text = "%d pts  |  %d cartes" % [cost, pack.card_count + GameManager.pack_card_bonus]
 	info_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	info_lbl.add_theme_font_size_override("font_size", 11)
 	info_lbl.add_theme_color_override("font_color", Color(0.72, 0.65, 0.52))

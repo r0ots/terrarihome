@@ -1,7 +1,8 @@
 class_name PrestigeDatabase
 
 const BRANCHES := [
-	"grille_biomes", "plantes_packs", "main_cartes", "outils_inventaire", "savoir", "principale"
+	"grille_biomes", "plantes_packs", "main_cartes", "outils_inventaire", "savoir",
+	"economie", "abondance", "maitrise", "principale"
 ]
 
 const BRANCH_NAMES := {
@@ -10,6 +11,9 @@ const BRANCH_NAMES := {
 	"main_cartes": "Main & Cartes",
 	"outils_inventaire": "Outils & Inventaire",
 	"savoir": "Savoir",
+	"economie": "Economie",
+	"abondance": "Abondance",
+	"maitrise": "Maitrise",
 	"principale": "Principale",
 }
 
@@ -95,6 +99,20 @@ static func _register_all() -> void:
 	_add(&"encyclopedie", "Encyclopedie", 1, [], &"savoir", [&"unlock_encyclopedia"])
 	_add(&"loupe", "Loupe", 1, [&"encyclopedie"], &"savoir", [&"unlock_magnifier"])
 	_add(&"rayons_x", "Rayons X", 1, [&"loupe"], &"savoir", [&"unlock_xray"])
+	# Economie
+	_add(&"reduction_eco", "Reduction Eco", 1, [], &"economie", [&"inflation_eco_zero"])
+	_add(&"reduction_standard", "Reduction Standard", 1, [&"reduction_eco"], &"economie", [&"inflation_standard_minus1"])
+	_add(&"reduction_premium", "Reduction Premium", 2, [&"reduction_standard"], &"economie", [&"inflation_premium_minus1"])
+	_add(&"pack_gratuit", "Pack Gratuit", 1, [&"reduction_eco"], &"economie", [&"free_first_pack"])
+	# Abondance
+	_add(&"abondance_1", "Abondance I", 1, [], &"abondance", [&"pack_cards_plus1"])
+	_add(&"abondance_2", "Abondance II", 2, [&"abondance_1"], &"abondance", [&"pack_cards_plus1"])
+	_add(&"main_debordante", "Main Debordante", 2, [&"abondance_1"], &"abondance", [&"overflow_compost"])
+	# Maitrise
+	_add(&"maitrise_base", "Maitrise des Bases", 1, [], &"maitrise", [&"mastery_base_1"])
+	_add(&"maitrise_standard", "Maitrise Intermediaire", 1, [&"maitrise_base"], &"maitrise", [&"mastery_standard_1"])
+	_add(&"maitrise_avancee", "Maitrise Avancee", 2, [&"maitrise_standard"], &"maitrise", [&"mastery_standard_2", &"mastery_premium_1"])
+	_add(&"maitrise_supreme", "Maitrise Supreme", 3, [&"maitrise_avancee"], &"maitrise", [&"mastery_premium_3"])
 	# Principale
 	_add(&"jardinier_expert", "Jardinier Expert", 1, [&"ALL_OTHER_BRANCHES"], &"principale", [&"cosmetic_expert", &"global_scoring_bonus"])
 	_add(&"terrarium_parfait", "Terrarium Parfait", 1, [&"jardinier_expert"], &"principale", [&"game_complete"])

@@ -12,3 +12,4 @@ extends Resource
 @export var flat_value: int = 0
 @export var compost_value: int = 1
 @export var is_base: bool = false
+@export var tier: StringName = &"base"
