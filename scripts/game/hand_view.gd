@@ -1,0 +1,126 @@
+class_name HandView extends HBoxContainer
+
+signal card_selected(index: int)
+signal card_deselected
+
+var selected_index: int = -1
+
+
+func refresh(hand: Array) -> void:
+	for c in get_children():
+		c.queue_free()
+	selected_index = -1
+	for i in hand.size():
+		add_child(_create_card(i, hand[i]))
+
+
+func select_card(index: int) -> void:
+	selected_index = index
+	_update_highlights()
+	card_selected.emit(index)
+
+
+func deselect() -> void:
+	selected_index = -1
+	_update_highlights()
+	card_deselected.emit()
+
+
+func _update_highlights() -> void:
+	for i in get_child_count():
+		var panel: PanelContainer = get_child(i)
+		var sb := StyleBoxFlat.new()
+		sb.bg_color = Color(0.15, 0.18, 0.15)
+		sb.border_color = Color.GOLD if i == selected_index else Color(0.3, 0.3, 0.3)
+		sb.set_border_width_all(3 if i == selected_index else 1)
+		sb.set_corner_radius_all(6)
+		sb.set_content_margin_all(6)
+		panel.add_theme_stylebox_override("panel", sb)
+
+
+func _create_card(index: int, plant_id: String) -> PanelContainer:
+	var data := PlantDatabase.get_plant(plant_id)
+	var panel := PanelContainer.new()
+	panel.custom_minimum_size = Vector2(100, 130)
+
+	var vbox := VBoxContainer.new()
+	vbox.alignment = BoxContainer.ALIGNMENT_CENTER
+
+	var name_label := Label.new()
+	name_label.text = data.get("name_fr", plant_id)
+	name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	name_label.add_theme_font_size_override("font_size", 12)
+	vbox.add_child(name_label)
+
+	var shape_preview := ShapePreview.new()
+	shape_preview.plant_id = plant_id
+	shape_preview.custom_minimum_size = Vector2(80, 60)
+	vbox.add_child(shape_preview)
+
+	# Type tags
+	var types_label := Label.new()
+	var type_strs: PackedStringArray = []
+	for t: StringName in data.get("types", []):
+		type_strs.append(str(t))
+	types_label.text = " ".join(type_strs)
+	types_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	types_label.add_theme_font_size_override("font_size", 10)
+	types_label.add_theme_color_override("font_color", Color(0.7, 0.7, 0.7))
+	vbox.add_child(types_label)
+
+	panel.add_child(vbox)
+
+	panel.gui_input.connect(func(event: InputEvent) -> void:
+		if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
+			if selected_index == index:
+				deselect()
+			else:
+				select_card(index)
+	)
+
+	var sb := StyleBoxFlat.new()
+	sb.bg_color = Color(0.15, 0.18, 0.15)
+	sb.border_color = Color(0.3, 0.3, 0.3)
+	sb.set_border_width_all(1)
+	sb.set_corner_radius_all(6)
+	sb.set_content_margin_all(6)
+	panel.add_theme_stylebox_override("panel", sb)
+
+	return panel
+
+
+class ShapePreview extends Control:
+	var plant_id: String = ""
+	const MINI_CELL := 10
+	const TYPE_COLORS := {
+		&"legume": Color("#4CAF50"),
+		&"plante": Color("#8BC34A"),
+		&"champi": Color("#795548"),
+		&"racine": Color("#FF9800"),
+	}
+
+	func _draw() -> void:
+		var data := PlantDatabase.get_plant(plant_id)
+		if data.is_empty():
+			return
+		var shape: Array = data.shape
+		var types: Array = data.get("types", [])
+		var col: Color = TYPE_COLORS.get(types[0], Color.WHITE) if types.size() > 0 else Color.WHITE
+
+		# Center the shape
+		var min_x := 999
+		var min_y := 999
+		var max_x := -999
+		var max_y := -999
+		for s: Vector2i in shape:
+			min_x = mini(min_x, s.x)
+			min_y = mini(min_y, s.y)
+			max_x = maxi(max_x, s.x)
+			max_y = maxi(max_y, s.y)
+		var shape_w := (max_x - min_x + 1) * MINI_CELL
+		var shape_h := (max_y - min_y + 1) * MINI_CELL
+		var offset := Vector2((size.x - shape_w) / 2, (size.y - shape_h) / 2)
+
+		for s: Vector2i in shape:
+			var r := Rect2(offset.x + (s.x - min_x) * MINI_CELL, offset.y + (s.y - min_y) * MINI_CELL, MINI_CELL - 1, MINI_CELL - 1)
+			draw_rect(r, col)
