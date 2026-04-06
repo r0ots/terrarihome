@@ -11,7 +11,7 @@ extends Node2D
 var grid_data: GridData
 var scoring: ScoringEngine
 var selected_card_index: int = -1
-var prestige_tree_scene := preload("res://scenes/prestige/prestige_tree.tscn")
+var prestige_tree_scene: PackedScene = preload("res://scenes/prestige/prestige_tree.tscn")
 var prestige_tree_instance: Control = null
 
 
@@ -20,7 +20,7 @@ func _ready() -> void:
 	scoring = ScoringEngine.new(grid_data)
 	grid_view.set_grid_data(grid_data)
 
-	var grid_px := Vector2(grid_data.width * GridView.CELL_SIZE, grid_data.height * GridView.CELL_SIZE)
+	var grid_px: Vector2 = Vector2(grid_data.width * GridView.CELL_SIZE, grid_data.height * GridView.CELL_SIZE)
 	grid_view.position = Vector2((1280 - grid_px.x) / 2, (720 - grid_px.y) / 2 - 40)
 
 	GameManager.points_changed.connect(_on_points_changed)
@@ -41,8 +41,8 @@ func _ready() -> void:
 			grid_view.set_grid_data(grid_data)
 		if SaveManager.shop_slots_save.size() > 0:
 			shop_panel.shop_slots.clear()
-			for s in SaveManager.shop_slots_save:
-				shop_panel.shop_slots.append(s)
+			for s: String in SaveManager.shop_slots_save:
+				shop_panel.shop_slots.append(StringName(s))
 
 	_refresh_all()
 
@@ -82,17 +82,17 @@ func _on_cell_hovered(grid_pos: Vector2i) -> void:
 func _on_cell_clicked(grid_pos: Vector2i) -> void:
 	if selected_card_index < 0 or selected_card_index >= GameManager.hand.size():
 		return
-	var plant_id: String = GameManager.hand[selected_card_index]
+	var plant_id: StringName = GameManager.hand[selected_card_index]
 	if not grid_data.can_place_plant(plant_id, grid_pos):
 		return
 
-	var inst_id := grid_data.place_plant(plant_id, grid_pos)
+	var inst_id: int = grid_data.place_plant(plant_id, grid_pos)
 	GameManager.hand.remove_at(selected_card_index)
 	selected_card_index = -1
 
-	var result := scoring.score_placement(plant_id, inst_id)
+	var result: Dictionary = scoring.score_placement(plant_id, inst_id)
 	if result.total > 0:
-		GameManager.add_points(result.total)
+		GameManager.points += result.total
 		grid_view.spawn_floating_text(grid_pos, "+%d" % result.total, Color.GOLD)
 
 	hand_bar.refresh(GameManager.hand)
@@ -104,17 +104,17 @@ func _on_cell_clicked(grid_pos: Vector2i) -> void:
 
 
 func _on_pack_purchased(slot_index: int) -> void:
-	var cost := shop_panel.get_pack_cost(slot_index)
+	var cost: int = shop_panel.get_pack_cost(slot_index)
 	if not GameManager.spend_points(cost):
 		return
-	var cards := shop_panel.draw_cards_from_pack(slot_index)
-	for card_id in cards:
-		GameManager.hand.append(card_id)
+	var cards: Array[String] = shop_panel.draw_cards_from_pack(slot_index)
+	for card_id: String in cards:
+		GameManager.hand.append(StringName(card_id))
 
-	var pack := PackDatabase.get_pack(shop_panel.shop_slots[slot_index])
-	GameManager.pack_price_modifier += pack.get("inflation", 1)
+	var pack: PackData = PackDatabase.get_pack(shop_panel.shop_slots[slot_index])
+	GameManager.pack_price_modifier += pack.inflation
 
-	var available := PackDatabase.get_available_packs(GameManager.unlocked_upgrades)
+	var available: Array[StringName] = PackDatabase.get_available_packs(GameManager.unlocked_upgrades)
 	shop_panel.shop_slots[slot_index] = available[randi() % available.size()]
 
 	_refresh_all()
@@ -124,8 +124,8 @@ func _on_pack_purchased(slot_index: int) -> void:
 func _on_prestige_pressed() -> void:
 	if not GameManager.can_prestige():
 		return
-	var pp := GameManager.get_prestige_value()
-	var dialog := ConfirmationDialog.new()
+	var pp: int = GameManager.get_prestige_value()
+	var dialog: ConfirmationDialog = ConfirmationDialog.new()
 	dialog.dialog_text = "Prestige pour %d PP ?\nLa grille et la main seront reinitalisees." % pp
 	dialog.confirmed.connect(func() -> void: GameManager.do_prestige())
 	add_child(dialog)

@@ -13,138 +13,41 @@ const BRANCH_NAMES := {
 	"principale": "Principale",
 }
 
-const NODES := {
-	# Grille & Biomes (4 pts)
-	"parcelle_herbeuse": {
-		"id": "parcelle_herbeuse", "name_fr": "Parcelle Herbeuse", "cost": 1,
-		"prerequisites": [], "branch": "grille_biomes",
-		"effects": ["grid_patch_standard"],
-	},
-	"terrain_rocheux": {
-		"id": "terrain_rocheux", "name_fr": "Terrain Rocheux", "cost": 1,
-		"prerequisites": ["parcelle_herbeuse"], "branch": "grille_biomes",
-		"effects": ["grid_patch_rocky"],
-	},
-	"riviere": {
-		"id": "riviere", "name_fr": "Riviere", "cost": 2,
-		"prerequisites": ["parcelle_herbeuse"], "branch": "grille_biomes",
-		"effects": ["grid_patch_river"],
-	},
-	# Plantes & Packs (4 pts)
-	"spores_champignon": {
-		"id": "spores_champignon", "name_fr": "Spores de Champignon", "cost": 1,
-		"prerequisites": [], "branch": "plantes_packs",
-		"effects": ["unlock_mushrooms", "unlock_pack_champignons"],
-	},
-	"decouverte_racines": {
-		"id": "decouverte_racines", "name_fr": "Decouverte des Racines", "cost": 1,
-		"prerequisites": [], "branch": "plantes_packs",
-		"effects": ["unlock_roots", "unlock_pack_racines"],
-	},
-	"packs_avances": {
-		"id": "packs_avances", "name_fr": "Packs Avances", "cost": 1,
-		"prerequisites": ["spores_champignon"], "branch": "plantes_packs",
-		"effects": ["unlock_pack_sous_bois", "unlock_pack_festin"],
-	},
-	"recolte_legendaire": {
-		"id": "recolte_legendaire", "name_fr": "Recolte Legendaire", "cost": 1,
-		"prerequisites": ["packs_avances", "decouverte_racines"], "branch": "plantes_packs",
-		"effects": ["unlock_pack_legendaire"],
-	},
-	# Main & Cartes (4 pts)
-	"poubelle": {
-		"id": "poubelle", "name_fr": "Poubelle", "cost": 1,
-		"prerequisites": [], "branch": "main_cartes",
-		"effects": ["unlock_discard"],
-	},
-	"composteur": {
-		"id": "composteur", "name_fr": "Composteur", "cost": 1,
-		"prerequisites": ["poubelle"], "branch": "main_cartes",
-		"effects": ["unlock_compost"],
-	},
-	"main_plus1": {
-		"id": "main_plus1", "name_fr": "Main +1", "cost": 1,
-		"prerequisites": [], "branch": "main_cartes",
-		"effects": ["hand_size_plus1"],
-	},
-	"starter_bonus": {
-		"id": "starter_bonus", "name_fr": "Starter Bonus", "cost": 1,
-		"prerequisites": ["main_plus1"], "branch": "main_cartes",
-		"effects": ["starter_extra_card"],
-	},
-	# Outils & Inventaire (4 pts)
-	"ceinture_outils": {
-		"id": "ceinture_outils", "name_fr": "Ceinture d'Outils", "cost": 1,
-		"prerequisites": [], "branch": "outils_inventaire",
-		"effects": ["unlock_tool_belt"],
-	},
-	"pelle": {
-		"id": "pelle", "name_fr": "Pelle", "cost": 1,
-		"prerequisites": ["ceinture_outils"], "branch": "outils_inventaire",
-		"effects": ["unlock_shovel"],
-	},
-	"engrais": {
-		"id": "engrais", "name_fr": "Engrais", "cost": 1,
-		"prerequisites": ["ceinture_outils"], "branch": "outils_inventaire",
-		"effects": ["unlock_fertilizer"],
-	},
-	"arrosoir": {
-		"id": "arrosoir", "name_fr": "Arrosoir", "cost": 1,
-		"prerequisites": ["pelle", "engrais"], "branch": "outils_inventaire",
-		"effects": ["unlock_watering_can"],
-	},
-	# Savoir (3 pts)
-	"encyclopedie": {
-		"id": "encyclopedie", "name_fr": "Encyclopedie", "cost": 1,
-		"prerequisites": [], "branch": "savoir",
-		"effects": ["unlock_encyclopedia"],
-	},
-	"loupe": {
-		"id": "loupe", "name_fr": "Loupe", "cost": 1,
-		"prerequisites": ["encyclopedie"], "branch": "savoir",
-		"effects": ["unlock_magnifier"],
-	},
-	"rayons_x": {
-		"id": "rayons_x", "name_fr": "Rayons X", "cost": 1,
-		"prerequisites": ["loupe"], "branch": "savoir",
-		"effects": ["unlock_xray"],
-	},
-	# Principale (2 pts)
-	"jardinier_expert": {
-		"id": "jardinier_expert", "name_fr": "Jardinier Expert", "cost": 1,
-		"prerequisites": ["ALL_OTHER_BRANCHES"], "branch": "principale",
-		"effects": ["cosmetic_expert", "global_scoring_bonus"],
-	},
-	"terrarium_parfait": {
-		"id": "terrarium_parfait", "name_fr": "Terrarium Parfait", "cost": 1,
-		"prerequisites": ["jardinier_expert"], "branch": "principale",
-		"effects": ["game_complete"],
-	},
-}
+static var _nodes: Dictionary = {}
+static var _initialized := false
 
 
-static func get_node(id: String) -> Dictionary:
-	return NODES.get(id, {})
+static func _ensure_init() -> void:
+	if _initialized: return
+	_initialized = true
+	_register_all()
+
+
+static func get_node(id: StringName) -> PrestigeNode:
+	_ensure_init()
+	return _nodes.get(id)
 
 
 static func get_all_nodes() -> Dictionary:
-	return NODES
+	_ensure_init()
+	return _nodes
 
 
-static func get_branch(branch: String) -> Array[Dictionary]:
-	var result: Array[Dictionary] = []
-	for node in NODES.values():
+static func get_branch(branch: String) -> Array[PrestigeNode]:
+	_ensure_init()
+	var result: Array[PrestigeNode] = []
+	for node: PrestigeNode in _nodes.values():
 		if node.branch == branch:
 			result.append(node)
 	return result
 
 
-static func can_unlock(id: String, unlocked: Array) -> bool:
+static func can_unlock(id: StringName, unlocked: Array) -> bool:
 	var node := get_node(id)
-	if node.is_empty() or id in unlocked:
+	if not node or id in unlocked:
 		return false
-	for prereq in node.prerequisites:
-		if prereq == "ALL_OTHER_BRANCHES":
+	for prereq: StringName in node.prerequisites:
+		if prereq == &"ALL_OTHER_BRANCHES":
 			if not are_all_branches_complete(unlocked):
 				return false
 		elif prereq not in unlocked:
@@ -153,7 +56,7 @@ static func can_unlock(id: String, unlocked: Array) -> bool:
 
 
 static func is_branch_complete(branch: String, unlocked: Array) -> bool:
-	for node in get_branch(branch):
+	for node: PrestigeNode in get_branch(branch):
 		if node.id not in unlocked:
 			return false
 	return true
@@ -166,3 +69,43 @@ static func are_all_branches_complete(unlocked: Array) -> bool:
 		if not is_branch_complete(branch, unlocked):
 			return false
 	return true
+
+
+static func _register_all() -> void:
+	# Grille & Biomes
+	_add(&"parcelle_herbeuse", "Parcelle Herbeuse", 1, [], &"grille_biomes", [&"grid_patch_standard"])
+	_add(&"terrain_rocheux", "Terrain Rocheux", 1, [&"parcelle_herbeuse"], &"grille_biomes", [&"grid_patch_rocky"])
+	_add(&"riviere", "Riviere", 2, [&"parcelle_herbeuse"], &"grille_biomes", [&"grid_patch_river"])
+	# Plantes & Packs
+	_add(&"spores_champignon", "Spores de Champignon", 1, [], &"plantes_packs", [&"unlock_mushrooms", &"unlock_pack_champignons"])
+	_add(&"decouverte_racines", "Decouverte des Racines", 1, [], &"plantes_packs", [&"unlock_roots", &"unlock_pack_racines"])
+	_add(&"packs_avances", "Packs Avances", 1, [&"spores_champignon"], &"plantes_packs", [&"unlock_pack_sous_bois", &"unlock_pack_festin"])
+	_add(&"recolte_legendaire", "Recolte Legendaire", 1, [&"packs_avances", &"decouverte_racines"], &"plantes_packs", [&"unlock_pack_legendaire"])
+	# Main & Cartes
+	_add(&"poubelle", "Poubelle", 1, [], &"main_cartes", [&"unlock_discard"])
+	_add(&"composteur", "Composteur", 1, [&"poubelle"], &"main_cartes", [&"unlock_compost"])
+	_add(&"main_plus1", "Main +1", 1, [], &"main_cartes", [&"hand_size_plus1"])
+	_add(&"starter_bonus", "Starter Bonus", 1, [&"main_plus1"], &"main_cartes", [&"starter_extra_card"])
+	# Outils & Inventaire
+	_add(&"ceinture_outils", "Ceinture d'Outils", 1, [], &"outils_inventaire", [&"unlock_tool_belt"])
+	_add(&"pelle", "Pelle", 1, [&"ceinture_outils"], &"outils_inventaire", [&"unlock_shovel"])
+	_add(&"engrais", "Engrais", 1, [&"ceinture_outils"], &"outils_inventaire", [&"unlock_fertilizer"])
+	_add(&"arrosoir", "Arrosoir", 1, [&"pelle", &"engrais"], &"outils_inventaire", [&"unlock_watering_can"])
+	# Savoir
+	_add(&"encyclopedie", "Encyclopedie", 1, [], &"savoir", [&"unlock_encyclopedia"])
+	_add(&"loupe", "Loupe", 1, [&"encyclopedie"], &"savoir", [&"unlock_magnifier"])
+	_add(&"rayons_x", "Rayons X", 1, [&"loupe"], &"savoir", [&"unlock_xray"])
+	# Principale
+	_add(&"jardinier_expert", "Jardinier Expert", 1, [&"ALL_OTHER_BRANCHES"], &"principale", [&"cosmetic_expert", &"global_scoring_bonus"])
+	_add(&"terrarium_parfait", "Terrarium Parfait", 1, [&"jardinier_expert"], &"principale", [&"game_complete"])
+
+
+static func _add(id: StringName, name_fr: String, cost: int, prerequisites: Array[StringName], branch: StringName, effects: Array[StringName]) -> void:
+	var n := PrestigeNode.new()
+	n.id = id
+	n.name_fr = name_fr
+	n.cost = cost
+	n.prerequisites = prerequisites
+	n.branch = branch
+	n.effects = effects
+	_nodes[id] = n

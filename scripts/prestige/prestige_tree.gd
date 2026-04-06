@@ -1,7 +1,7 @@
 extends Control
 
 signal closed
-signal node_unlocked(id: String)
+signal node_unlocked(id: StringName)
 
 const COL_LOCKED := Color(0.4, 0.4, 0.4)
 const COL_AFFORDABLE := Color(0.9, 0.8, 0.2)
@@ -20,88 +20,85 @@ func _ready() -> void:
 
 
 func _build_ui() -> void:
-	var bg := ColorRect.new()
+	var bg: ColorRect = ColorRect.new()
 	bg.color = COL_BG
 	bg.set_anchors_preset(PRESET_FULL_RECT)
 	add_child(bg)
 
-	var vroot := VBoxContainer.new()
+	var vroot: VBoxContainer = VBoxContainer.new()
 	vroot.set_anchors_preset(PRESET_FULL_RECT)
 	vroot.add_theme_constant_override("separation", 12)
 	add_child(vroot)
 
-	# Header
-	var header := HBoxContainer.new()
+	var header: HBoxContainer = HBoxContainer.new()
 	header.alignment = BoxContainer.ALIGNMENT_CENTER
 	header.add_theme_constant_override("separation", 24)
 	vroot.add_child(header)
 
-	var title := Label.new()
+	var title: Label = Label.new()
 	title.text = "Arbre de Prestige"
 	title.add_theme_font_size_override("font_size", 28)
 	header.add_child(title)
 
-	var pp_label := Label.new()
+	var pp_label: Label = Label.new()
 	pp_label.name = "PPLabel"
 	pp_label.add_theme_font_size_override("font_size", 22)
 	header.add_child(pp_label)
 
-	var close_btn := Button.new()
+	var close_btn: Button = Button.new()
 	close_btn.text = "X"
 	close_btn.pressed.connect(_on_close)
 	header.add_child(close_btn)
 
-	# Lines layer
 	lines_container = Node2D.new()
 	lines_container.z_index = -1
 	add_child(lines_container)
 
-	# Branch columns
-	var scroll := ScrollContainer.new()
+	var scroll: ScrollContainer = ScrollContainer.new()
 	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_AUTO
 	vroot.add_child(scroll)
 
-	var hbox := HBoxContainer.new()
+	var hbox: HBoxContainer = HBoxContainer.new()
 	hbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	hbox.add_theme_constant_override("separation", 16)
 	hbox.alignment = BoxContainer.ALIGNMENT_CENTER
 	scroll.add_child(hbox)
 
-	for branch in PrestigeDatabase.BRANCHES:
-		var col := VBoxContainer.new()
+	for branch: String in PrestigeDatabase.BRANCHES:
+		var col: VBoxContainer = VBoxContainer.new()
 		col.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		col.add_theme_constant_override("separation", 8)
 		hbox.add_child(col)
 
-		var branch_label := Label.new()
+		var branch_label: Label = Label.new()
 		branch_label.text = PrestigeDatabase.BRANCH_NAMES.get(branch, branch)
 		branch_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		branch_label.add_theme_font_size_override("font_size", 18)
 		col.add_child(branch_label)
 
-		for node_data in PrestigeDatabase.get_branch(branch):
-			var panel := _make_node_panel(node_data)
+		for node_data: PrestigeNode in PrestigeDatabase.get_branch(branch):
+			var panel: PanelContainer = _make_node_panel(node_data)
 			col.add_child(panel)
 			node_panels[node_data.id] = panel
 
 
-func _make_node_panel(data: Dictionary) -> PanelContainer:
-	var panel := PanelContainer.new()
+func _make_node_panel(data: PrestigeNode) -> PanelContainer:
+	var panel: PanelContainer = PanelContainer.new()
 	panel.custom_minimum_size = Vector2(160, 60)
 	panel.name = data.id
 
-	var vb := VBoxContainer.new()
+	var vb: VBoxContainer = VBoxContainer.new()
 	vb.add_theme_constant_override("separation", 2)
 	panel.add_child(vb)
 
-	var name_label := Label.new()
+	var name_label: Label = Label.new()
 	name_label.text = data.name_fr
 	name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	name_label.add_theme_font_size_override("font_size", 14)
 	vb.add_child(name_label)
 
-	var cost_label := Label.new()
+	var cost_label: Label = Label.new()
 	cost_label.text = "Cout: %d PP" % data.cost
 	cost_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	cost_label.add_theme_font_size_override("font_size", 12)
@@ -112,14 +109,14 @@ func _make_node_panel(data: Dictionary) -> PanelContainer:
 	return panel
 
 
-func _on_node_input(event: InputEvent, id: String) -> void:
+func _on_node_input(event: InputEvent, id: StringName) -> void:
 	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
 		_try_unlock(id)
 
 
-func _try_unlock(id: String) -> void:
-	var data := PrestigeDatabase.get_node(id)
-	if data.is_empty():
+func _try_unlock(id: StringName) -> void:
+	var data: PrestigeNode = PrestigeDatabase.get_node(id)
+	if not data:
 		return
 	if not PrestigeDatabase.can_unlock(id, gm.unlocked_upgrades):
 		return
@@ -132,23 +129,16 @@ func _try_unlock(id: String) -> void:
 	refresh()
 
 
-func _apply_effects(effects: Array) -> void:
-	for effect: String in effects:
+func _apply_effects(effects: Array[StringName]) -> void:
+	for effect: StringName in effects:
 		match effect:
-			"hand_size_plus1":
+			&"hand_size_plus1":
 				gm.hand_size_max += 1
-			"starter_extra_card":
-				var all_plants := PlantDatabase.PLANTS.keys()
+			&"starter_extra_card":
+				var all_plants: Array = PlantDatabase.get_all().keys()
 				gm.starting_cards.append(all_plants[randi() % all_plants.size()])
-			"unlock_discard", "unlock_compost", "unlock_tool_belt", \
-			"unlock_shovel", "unlock_fertilizer", "unlock_watering_can", \
-			"unlock_encyclopedia", "unlock_magnifier", "unlock_xray", \
-			"unlock_mushrooms", "unlock_roots", \
-			"unlock_pack_champignons", "unlock_pack_racines", \
-			"unlock_pack_sous_bois", "unlock_pack_festin", "unlock_pack_legendaire", \
-			"grid_patch_standard", "grid_patch_rocky", "grid_patch_river", \
-			"cosmetic_expert", "global_scoring_bonus", "game_complete":
-				pass # Tracked via unlocked_upgrades, consumed by relevant systems
+			_:
+				pass
 
 
 func refresh() -> void:
@@ -156,10 +146,10 @@ func refresh() -> void:
 	if pp_label:
 		pp_label.text = "PP: %d" % gm.prestige_points
 
-	for id: String in node_panels:
+	for id: StringName in node_panels:
 		var panel: PanelContainer = node_panels[id]
-		var data := PrestigeDatabase.get_node(id)
-		var style := StyleBoxFlat.new()
+		var data: PrestigeNode = PrestigeDatabase.get_node(id)
+		var style: StyleBoxFlat = StyleBoxFlat.new()
 		style.set_corner_radius_all(6)
 		style.content_margin_left = 8
 		style.content_margin_right = 8
@@ -184,24 +174,24 @@ func refresh() -> void:
 
 
 func _draw_lines() -> void:
-	for child in lines_container.get_children():
+	for child: Node in lines_container.get_children():
 		child.queue_free()
 
 	await get_tree().process_frame
 
-	for id: String in node_panels:
-		var data := PrestigeDatabase.get_node(id)
-		for prereq: String in data.prerequisites:
-			if prereq == "ALL_OTHER_BRANCHES":
+	for id: StringName in node_panels:
+		var data: PrestigeNode = PrestigeDatabase.get_node(id)
+		for prereq: StringName in data.prerequisites:
+			if prereq == &"ALL_OTHER_BRANCHES":
 				continue
 			if prereq not in node_panels:
 				continue
 			var from_panel: PanelContainer = node_panels[prereq]
 			var to_panel: PanelContainer = node_panels[id]
-			var from_pos := from_panel.global_position + from_panel.size / 2
-			var to_pos := to_panel.global_position + to_panel.size / 2
+			var from_pos: Vector2 = from_panel.global_position + from_panel.size / 2
+			var to_pos: Vector2 = to_panel.global_position + to_panel.size / 2
 
-			var line := Line2D.new()
+			var line: Line2D = Line2D.new()
 			line.points = [from_pos - global_position, to_pos - global_position]
 			line.width = 2.0
 
