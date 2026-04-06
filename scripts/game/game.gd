@@ -20,9 +20,6 @@ func _ready() -> void:
 	scoring = ScoringEngine.new(grid_data)
 	grid_view.set_grid_data(grid_data)
 
-	var grid_px: Vector2 = Vector2(grid_data.width * GridView.CELL_SIZE, grid_data.height * GridView.CELL_SIZE)
-	grid_view.position = Vector2((1280 - grid_px.x) / 2, (720 - grid_px.y) / 2 - 40)
-
 	GameManager.points_changed.connect(_on_points_changed)
 	GameManager.prestige_done.connect(_on_prestige_done)
 	grid_view.cell_clicked.connect(_on_cell_clicked)

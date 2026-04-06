@@ -3,10 +3,10 @@ extends Control
 signal closed
 signal node_unlocked(id: StringName)
 
-const COL_LOCKED := Color(0.4, 0.4, 0.4)
-const COL_AFFORDABLE := Color(0.9, 0.8, 0.2)
-const COL_UNLOCKED := Color(0.2, 0.8, 0.3)
-const COL_BG := Color(0.05, 0.05, 0.1, 0.92)
+const COL_LOCKED := Color(0.25, 0.20, 0.15)
+const COL_AFFORDABLE := Color(0.90, 0.75, 0.25)
+const COL_UNLOCKED := Color(0.35, 0.72, 0.30)
+const COL_BG := Color(0.06, 0.05, 0.03, 0.94)
 
 var node_panels: Dictionary = {}
 var lines_container: Node2D
@@ -38,11 +38,13 @@ func _build_ui() -> void:
 	var title: Label = Label.new()
 	title.text = "Arbre de Prestige"
 	title.add_theme_font_size_override("font_size", 28)
+	title.add_theme_color_override("font_color", Color(0.96, 0.93, 0.85))
 	header.add_child(title)
 
 	var pp_label: Label = Label.new()
 	pp_label.name = "PPLabel"
 	pp_label.add_theme_font_size_override("font_size", 22)
+	pp_label.add_theme_color_override("font_color", Color(0.92, 0.75, 0.25))
 	header.add_child(pp_label)
 
 	var close_btn: Button = Button.new()
@@ -159,7 +161,7 @@ func refresh() -> void:
 		if id in gm.unlocked_upgrades:
 			style.bg_color = COL_UNLOCKED
 		elif PrestigeDatabase.can_unlock(id, gm.unlocked_upgrades) and gm.prestige_points >= data.cost:
-			style.bg_color = Color(0.15, 0.15, 0.15)
+			style.bg_color = Color(0.12, 0.09, 0.06)
 			style.border_color = COL_AFFORDABLE
 			style.border_width_left = 2
 			style.border_width_right = 2

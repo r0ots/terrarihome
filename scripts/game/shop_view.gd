@@ -67,13 +67,14 @@ func _create_pack_slot(index: int, pack: PackData, cost: int, can_buy: bool) -> 
 	name_lbl.text = pack.name_fr
 	name_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	name_lbl.add_theme_font_size_override("font_size", 13)
+	name_lbl.add_theme_color_override("font_color", Color(0.96, 0.93, 0.85))
 	vbox.add_child(name_lbl)
 
 	var info_lbl: Label = Label.new()
 	info_lbl.text = "%d pts  |  %d cartes" % [cost, pack.card_count]
 	info_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	info_lbl.add_theme_font_size_override("font_size", 11)
-	info_lbl.add_theme_color_override("font_color", Color(0.7, 0.7, 0.7))
+	info_lbl.add_theme_color_override("font_color", Color(0.72, 0.65, 0.52))
 	vbox.add_child(info_lbl)
 
 	var btn: Button = Button.new()
@@ -85,8 +86,8 @@ func _create_pack_slot(index: int, pack: PackData, cost: int, can_buy: bool) -> 
 	panel.add_child(vbox)
 
 	var sb: StyleBoxFlat = StyleBoxFlat.new()
-	sb.bg_color = Color(0.12, 0.14, 0.18)
-	sb.border_color = Color(0.4, 0.4, 0.5)
+	sb.bg_color = Color(0.14, 0.11, 0.08)
+	sb.border_color = Color(0.45, 0.40, 0.28)
 	sb.set_border_width_all(1)
 	sb.set_corner_radius_all(6)
 	sb.set_content_margin_all(8)

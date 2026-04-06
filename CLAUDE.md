@@ -6,7 +6,7 @@ Terrarium card-placement puzzle game. Designed by user's son, built with Godot 4
 
 Place plants on an 18x8 grid, score points via adjacency combos, buy card packs, prestige to unlock content. Free-form (no turns). Ends when "Terrarium Parfait" prestige node is purchased.
 
-Full rules: `docs/gdd_fr.md` (source of truth, French). English version: `docs/gdd.md` (may be outdated).
+Full rules: `docs/gdd_fr.md` (source of truth, French).
 
 ## Architecture
 
